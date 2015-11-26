@@ -2,6 +2,15 @@
 
 A realtime synthesizer designed around pipes
 
+Build
+
+    make
+
+Requires
+
+    ncurses
+    sox
+
 Usage
 
-    gcc freqmod.c -l ncurses && ./a.out | play -c 1 -r 44100 -b 16 -q -t raw -e signed-integer -
+    freqmod | play -c 1 -r 44100 -b 32 -q -t raw -e signed-integer -
