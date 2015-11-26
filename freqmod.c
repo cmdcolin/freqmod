@@ -11,6 +11,7 @@ int main() {
     float fc=440,fm=440;
     float amplitude=3200000;
     float theta=0;
+    float beta=1;
     char ch;
     WINDOW *w = initscr();
     cbreak();
@@ -20,18 +21,20 @@ int main() {
         for(int i=0;i<S_RATE;i++) {
             if((ch=getch())!=-1) {
                 if(ch=='q') { endwin(); return 0; }
-                else if(ch=='u') { fc+=100; }
+                else if(ch=='s') { fc+=100; }
                 else if(ch=='d') { fc-=100; }
                 else if(ch=='x') { fm+=100; }
-                else if(ch=='c') { fm+=100; }
+                else if(ch=='c') { fm-=100; }
                 else if(ch=='t') { theta+=1; }
-                fprintf(stderr,"%02.2f %02.2f %02.2f\r\n",fc,fm,theta);
+                else if(ch=='b') { beta+=0.1; }
+                else if(ch=='v') { beta-=0.1; }
+                fprintf(stderr,"%02.2f %02.2f %02.2f %2.2f\r\n",fc,fm,theta,beta);
             }
             float fr = fc*2*M_PI/S_RATE;
             float fs = fm*2*M_PI/S_RATE+theta;
             p1 += fr; 
             p2 += fs; 
-            buffer[i]=(int) (amplitude*(sin(p1+sin(p2))));
+            buffer[i]=(int) (amplitude*(sin(p1+beta*sin(p2))));
         }
         fwrite(buffer, sizeof(int), S_RATE, stdout);
     }
