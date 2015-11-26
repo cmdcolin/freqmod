@@ -7,9 +7,10 @@
  
 int buffer[S_RATE];
 int main() {
-    float phase=0;
-    float freq_Hz=440;
+    float p1=0,p2=0;
+    float fc=440,fm=440;
     float amplitude=3200000;
+    float theta=0;
     char ch;
     WINDOW *w = initscr();
     cbreak();
@@ -18,13 +19,19 @@ int main() {
     while(1) {
         for(int i=0;i<S_RATE;i++) {
             if((ch=getch())!=-1) {
-                if(ch=='q') { endwin();return 0; }
-                else if(ch=='u') { freq_Hz+=100; }
-                else if(ch=='d') { freq_Hz-=100; }
+                if(ch=='q') { endwin(); return 0; }
+                else if(ch=='u') { fc+=100; }
+                else if(ch=='d') { fc-=100; }
+                else if(ch=='x') { fm+=100; }
+                else if(ch=='c') { fm+=100; }
+                else if(ch=='t') { theta+=1; }
+                fprintf(stderr,"%02.2f %02.2f %02.2f\r\n",fc,fm,theta);
             }
-            float freq_radians_per_sample = freq_Hz*2*M_PI/S_RATE;
-            phase += freq_radians_per_sample; 
-            buffer[i]=(int) (amplitude*sin(phase));
+            float fr = fc*2*M_PI/S_RATE;
+            float fs = fm*2*M_PI/S_RATE+theta;
+            p1 += fr; 
+            p2 += fs; 
+            buffer[i]=(int) (amplitude*(sin(p1+sin(p2))));
         }
         fwrite(buffer, sizeof(int), S_RATE, stdout);
     }
