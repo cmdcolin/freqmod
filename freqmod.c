@@ -30,18 +30,17 @@ int main() {
     cbreak();
     nodelay(w, TRUE);
     noecho();
-    while(1) {
-        if((ch=getch())!=-1) {
-            if(ch=='p') { break; }
-            else if(ch=='q') { f_c*=2; }
-            else if(ch=='w') { f_c/=2; }
-            else if(ch=='a') { f_m*=2; }
-            else if(ch=='s') { f_m/=2; }
-            else if(ch=='z') { theta_m+=.01; }
-            else if(ch=='x') { theta_m-=.01; }
-            else if(ch=='c') { theta_c+=.01; }
-            else if(ch=='v') { theta_c-=.01; }
-        }
+    while((ch = getch())) {
+        if(ch=='p') { break; }
+        else if(ch=='q') { f_c*=2; }
+        else if(ch=='w') { f_c/=2; }
+        else if(ch=='a') { f_m*=2; }
+        else if(ch=='s') { f_m/=2; }
+        else if(ch=='z') { theta_m+=.01; }
+        else if(ch=='x') { theta_m-=.01; }
+        else if(ch=='c') { theta_c+=.01; }
+        else if(ch=='v') { theta_c-=.01; }
+
         p1 += f_c*2*M_PI/S_RATE+theta_c;
         p2 += f_m*2*M_PI/S_RATE+theta_m;
         I_t += 0.0001*sign;
