@@ -25,6 +25,8 @@ int main() {
     float I_t=0;
     int sign=1;
     int index=0;
+    bool square1=false;
+    bool square2=false;
     char ch;
     WINDOW *w = initscr();
     cbreak();
@@ -40,13 +42,20 @@ int main() {
         else if(ch=='x') { theta_m-=.01; }
         else if(ch=='c') { theta_c+=.01; }
         else if(ch=='v') { theta_c-=.01; }
+        else if(ch=='b') { square1=!square1; }
+        else if(ch=='g') { square2=!square2; }
 
         p1 += f_c*2*M_PI/S_RATE+theta_c;
         p2 += f_m*2*M_PI/S_RATE+theta_m;
         I_t += 0.0001*sign;
         if(I_t>100||I_t<0) sign=-sign;
 
-        buffer[index]=(int) (amplitude*(cos(p1+I_t*(cos(p2)))));
+        float c1=cos(p2);
+        if(square1) c1=c1<=0?-1:1;
+        float c2=cos(p1+I_t*c1);
+        if(square2) c2=c2<=0?-1:1;
+        buffer[index]=amplitude*c2;
+
 
         index++;
         if(index%B_SIZE==0) {
