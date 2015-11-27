@@ -13,6 +13,6 @@ A realtime synthesizer designed around pipes
 
 ## Usage
 
-    freqmod | play -c 1 -r 44100 -b 32 -q -t raw -e signed-integer -
+    freqmod | play -c 1 -r 44100 -b 16 -q -t raw -e signed-integer -
 
 freqmod outputs raw audio data, hence the specified parameters to play

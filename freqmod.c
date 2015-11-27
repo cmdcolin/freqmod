@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <ncurses.h>
+#include <stdint.h>
 
 #define S_RATE  (44100)
 #define B_SIZE  (1024)
@@ -15,18 +16,16 @@
 //theta_m,c phase constants
 
 
-int buffer[B_SIZE];
 int main() {
+    uint16_t buffer[B_SIZE];
     float p1=0,p2=0;
     float f_c=40,f_m=80;
-    float amplitude=3200000;
-    float theta_m=0;
-    float theta_c=0;
+    float A=50;
+    float theta_m=0,theta_c=0;
+    bool square1=false,square2=false;
     float I_t=0;
     int sign=1;
     int index=0;
-    bool square1=false;
-    bool square2=false;
     char ch;
     WINDOW *w = initscr();
     cbreak();
@@ -54,13 +53,14 @@ int main() {
         if(square1) c1=c1<=0?-1:1;
         float c2=cos(p1+I_t*c1);
         if(square2) c2=c2<=0?-1:1;
-        buffer[index]=amplitude*c2;
+        buffer[index]=A*c2;
 
 
         index++;
         if(index%B_SIZE==0) {
-            fprintf(stderr,"f_c=%02.2f f_m=%02.2f theta_c=%02.2f theta_m=%02.2f I_t=%02.2f\r",f_c,f_m,theta_c,theta_m,I_t);
-            fwrite(buffer, sizeof(int), B_SIZE, stdout);
+            fprintf(stderr,"f_c=%02.2f f_m=%02.2f theta_c=%02.2f theta_m=%02.2f I_t=%02.2f s1=%s s2=%s\r",
+                f_c,f_m,theta_c,theta_m,I_t,square1?"true":"false",square2?"true":"false");
+            fwrite(buffer, sizeof(uint16_t), B_SIZE, stdout);
             index=0;
         }
     }
