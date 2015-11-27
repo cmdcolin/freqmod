@@ -2,15 +2,17 @@
 
 A realtime synthesizer designed around pipes
 
-Build
+## Build
 
     make
 
-Requires
+## Requires
 
     ncurses
     sox
 
-Usage
+## Usage
 
     freqmod | play -c 1 -r 44100 -b 32 -q -t raw -e signed-integer -
+
+freqmod outputs raw audio data, hence the specified parameters to play
