@@ -27,6 +27,7 @@ struct synth_state {
     int osc2_type;
     int osc3_type;
     int third_mod;
+    int depth;
 };
 
 int save_synth(char *,struct synth_state *);
@@ -34,7 +35,7 @@ int open_synth(char *,struct synth_state *);
 
 int main() {
     uint16_t buffer[B_SIZE];
-    struct synth_state s = {40,80,40,0,0,0,0,0,0,0};
+    struct synth_state s = {40,80,40,0,0,0,0,0,0,0,100};
     if(open_synth(".synthrc",&s)<1) { fprintf(stderr,"Using synth defaults"); }
     
     float A=50;
@@ -65,6 +66,8 @@ int main() {
         else if(ch=='g') { s.osc2_type++;s.osc2_type%=3; }
         else if(ch=='b') { s.osc3_type++;s.osc3_type%=3; }
         else if(ch=='m') { s.third_mod++;s.third_mod%=3; }
+        else if(ch=='u') { s.depth+=10; }
+        else if(ch=='y') { s.depth-=10; }
         else if(ch=='o') { if(save_synth(".synthrc",&s)<0) { perror("save_synth"); break; } }
 
 
@@ -73,8 +76,9 @@ int main() {
         float p2 = s.osc2*2*M_PI*t+s.osc2_t;
         float p3 = s.osc3*2*M_PI*t+s.osc3_t;
 
-        I_t += 0.0001*sign;
-        if(I_t>100||I_t<0) sign=-sign;
+        I_t += 0.001*sign;
+        if(I_t>s.depth) { I_t=s.depth;sign=-sign;}
+        else if(I_t<0) { I_t=0;sign=-sign;}
 
         if(s.third_mod==0) {
             float c1=cos(p1+s.osc1_t);
@@ -147,6 +151,7 @@ int open_synth(char *filename,struct synth_state* state) {
         fscanf(f, "osc2_type=%d\n",&state->osc2_type);
         fscanf(f, "osc3_type=%d\n",&state->osc3_type);
         fscanf(f, "third_mod=%d\n",&state->third_mod);
+        fscanf(f, "depth=%d\n",&state->depth);
         fclose(f);
         return 1;
     }
@@ -166,6 +171,7 @@ int save_synth(char *filename,struct synth_state* state) {
         fprintf(f, "osc2_type=%d\n",state->osc2_type);
         fprintf(f, "osc3_type=%d\n",state->osc3_type);
         fprintf(f, "third_mod=%d\n",state->third_mod);
+        fprintf(f, "depth=%d\n",state->depth);
         fclose(f);
         return 1;
     }
