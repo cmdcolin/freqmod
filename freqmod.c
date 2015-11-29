@@ -33,6 +33,10 @@ struct synth_state {
 int save_synth(char *,struct synth_state *);
 int open_synth(char *,struct synth_state *);
 
+float cosFunc(float pos,float theta) { return cos(pos*2*M_PI+theta); }
+float squareFunc(float pos,float theta) { return cos(pos*2*M_PI+theta)<=0?-1:1; }
+float triangleFunc(float pos,float theta) { return 1-fabs(pos+theta-0.5)*4; }
+
 int main() {
     uint16_t buffer[B_SIZE];
     struct synth_state s = {40,80,40,0,0,0,0,0,0,0,100};
@@ -65,68 +69,77 @@ int main() {
         else if(ch=='t') { s.osc1_type++;s.osc1_type%=3; }
         else if(ch=='g') { s.osc2_type++;s.osc2_type%=3; }
         else if(ch=='b') { s.osc3_type++;s.osc3_type%=3; }
-        else if(ch=='m') { s.third_mod++;s.third_mod%=3; }
+        else if(ch=='m') { s.third_mod++;s.third_mod%=4; }
         else if(ch=='u') { s.depth+=10; }
         else if(ch=='y') { s.depth-=10; }
         else if(ch=='o') { if(save_synth(".synthrc",&s)<0) { perror("save_synth"); break; } }
 
 
         t += 1.0/S_RATE;
-        float p1 = s.osc1*2*M_PI*t+s.osc1_t;
-        float p2 = s.osc2*2*M_PI*t+s.osc2_t;
-        float p3 = s.osc3*2*M_PI*t+s.osc3_t;
+        float p1 = fmod(s.osc1*t,1.0);
+        float p2 = fmod(s.osc2*t,1.0);
+        float p3 = fmod(s.osc3*t,1.0);
 
         I_t += 0.001*sign;
         if(I_t>s.depth) { I_t=s.depth;sign=-sign;}
         else if(I_t<0) { I_t=0;sign=-sign;}
 
         if(s.third_mod==0) {
-            float c1=cos(p1+s.osc1_t);
-            if(s.osc1_type==1) c1 = c1<=0?-1:1;
-            if(s.osc1_type==2) c1 = 1/s.osc1 * (s.osc1 - abs(index % (int) (s.osc1*2) - s.osc1) );
-            float c2=cos(p2+I_t*c1+s.osc2_t);
-            if(s.osc2_type==1) c2 = c2<=0?-1:1;
-            if(s.osc2_type==2) c2 = 1/s.osc2 * (s.osc2 - abs(index % (int) (s.osc2*2) - s.osc2) );
+            float c1 = cosFunc(p1,s.osc1_t);
+            if(s.osc1_type==1) c1 = squareFunc(p1,s.osc1_t);
+            if(s.osc1_type==2) c1 = triangleFunc(p1,s.osc1_t);
+            float c2 = cosFunc(p2,I_t*c1+s.osc2_t);
+            if(s.osc2_type==1) c2 = squareFunc(p2,I_t*c1+s.osc2_t);
+            if(s.osc2_type==2) c2 = triangleFunc(p2,I_t*c1+s.osc2_t);
             buffer[index]=A*c2;
         }
 
         else if(s.third_mod==1) {
-            float c1=cos(p1);
-            if(s.osc1_type==1) c1 = c1<=0?-1:1;
-            if(s.osc1_type==2) c1 = 1/s.osc1 * (s.osc1 - abs(index % (int) (s.osc1*2) - s.osc1) );
-            float c2=cos(p2+I_t*c1);
-            if(s.osc2_type==1) c2 = c2<=0?-1:1;
-            if(s.osc2_type==2) c2 = 1/s.osc2 * (s.osc2 - abs(index % (int) (s.osc2*2) - s.osc2) );
-            float c3=cos(p3+I_t*c2);
-            if(s.osc3_type==1) c3 = c3<=0?-1:1;
-            if(s.osc3_type==2) c3 = 1/s.osc3 * (s.osc3 - abs(index % (int) (s.osc3*2) - s.osc3) );
+            float c1 = cosFunc(p1,s.osc1_t);
+            if(s.osc1_type==1) c1 = squareFunc(p1,s.osc1_t);
+            if(s.osc1_type==2) c1 = triangleFunc(p1,s.osc1_t);
+            float c2 = cosFunc(p2,I_t*c1+s.osc2_t);
+            if(s.osc2_type==1) c2 = squareFunc(p2,I_t*c1+s.osc2_t);
+            if(s.osc2_type==2) c2 = triangleFunc(p2,I_t*c1+s.osc2_t);
+            float c3 = cosFunc(p3,I_t*c2+s.osc3_t);
+            if(s.osc3_type==1) c3 = squareFunc(p3,I_t*c2+s.osc3_t);
+            if(s.osc3_type==2) c3 = triangleFunc(p3,I_t*c2+s.osc3_t); 
             buffer[index]=A*c3;
         }
         else if(s.third_mod==2) {
-            float c1=cos(p2);
-            if(s.osc2_type==1) c1 = c1<=0?-1:1;
-            if(s.osc2_type==2) c1 = 1/s.osc2 * (s.osc2 - abs(index % (int) (s.osc2*2) - s.osc2) );
-            float c2=cos(p1);
-            if(s.osc1_type==1) c2 = c2<=0?-1:1;
-            if(s.osc1_type==2) c2 = 1/s.osc1 * (s.osc1 - abs(index % (int) (s.osc1*2) - s.osc1) );
-            float c3=cos(p3+I_t*c2+I_t*c1);
-            if(s.osc3_type==1) c3 = c3<=0?-1:1;
-            if(s.osc3_type==2) c3 = 1/s.osc3 * (s.osc3 - abs(index % (int) (s.osc3*2) - s.osc3) );
+            float c1 = cosFunc(p1,s.osc1_t);
+            if(s.osc1_type==1) c1 = squareFunc(p1,s.osc1_t);
+            if(s.osc1_type==2) c1 = triangleFunc(p1,s.osc1_t);
+            float c2 = cosFunc(p2,s.osc2_t);
+            if(s.osc2_type==1) c2 = squareFunc(p2,s.osc2_t);
+            if(s.osc2_type==2) c2 = triangleFunc(p2,s.osc2_t);
+            float c3 = cosFunc(p3,I_t*c2+I_t*c1+s.osc3_t);
+            if(s.osc3_type==1) c3 = squareFunc(p3,I_t*c2+I_t*c1+s.osc3_t);
+            if(s.osc3_type==2) c3 = triangleFunc(p3,I_t*c2+I_t*c1+s.osc3_t);
             buffer[index]=A*c3;
         }
+        else if(s.third_mod==3) {
+            float c1 = cosFunc(p1,0);
+            if(s.osc1_type==1) c1 = squareFunc(p1,0);
+            if(s.osc1_type==2) c1 = triangleFunc(p1,0);
+            buffer[index]=A*c1;
+        }
+        
 
 
         index++;
         if(index%B_SIZE==0) {
-            if(s.third_mod>0) {
-                werase(w);
-                fprintf(stderr,"osc1=%02.2f/%d\tosc2=%02.2f/%d\tosc3=%02.2f/%d\tt_c=%02.2f\tt_m=%02.2f\tt_ck=%02.2f\tI_t=%02.2f\t%s\r",
+            if(s.third_mod==3) {
+                fprintf(stderr,"osc1=%02.2f/%d\t%s\r\n",
+                    s.osc1,s.osc1_type,"osc1");
+            }
+            else if(s.third_mod>0) {
+                fprintf(stderr,"osc1=%02.2f/%d\tosc2=%02.2f/%d\tosc3=%02.2f/%d\tt_c=%02.2f\tt_m=%02.2f\tt_ck=%02.2f\tI_t=%02.2f\t%s\r\n",
                     s.osc1,s.osc1_type,s.osc2,s.osc2_type,s.osc3,s.osc3_type,s.osc1_t,s.osc2_t,s.osc3_t,I_t,
                     s.third_mod==1?"osc1->osc2->osc3":"osc1->osc2<-osc3");
             }
             else {
-                werase(w);
-                fprintf(stderr,"osc1=%02.2f/%d\tosc2=%02.2f/%d\tt_c=%02.2f\tt_m=%02.2f\tI_t=%02.2f\t%s\r",
+                fprintf(stderr,"osc1=%02.2f/%d\tosc2=%02.2f/%d\tt_c=%02.2f\tt_m=%02.2f\tI_t=%02.2f\t%s\r\n",
                     s.osc1,s.osc1_type,s.osc2,s.osc2_type,s.osc1_t,s.osc2_t,I_t,"osc1->osc2");
             }
             fwrite(buffer, sizeof(uint16_t), B_SIZE, stdout);
