@@ -1,3 +1,8 @@
+# 0.3
+
+- Remove control over theta
+- Add control over modulation index (instead of just sweeping the modulation index)
+
 # 0.2
 
 * Three oscillator FM synthesis
