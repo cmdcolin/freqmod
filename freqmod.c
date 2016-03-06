@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #define S_RATE  (44100)
-#define B_SIZE  (512)
+#define B_SIZE  (128)
 #define max(a,b) (a>b?a:b)
 
 //fmod equation
@@ -26,7 +26,7 @@ struct synth_state {
     int osc2_type;
     int osc3_type;
     int third_mod;
-    int depth;
+    float depth;
 };
 
 int save_synth(char *,struct synth_state *);
@@ -34,7 +34,7 @@ int open_synth(char *,struct synth_state *);
 
 float cosFunc(float pos,float theta) { return cos(pos*2*M_PI+theta); }
 float squareFunc(float pos,float theta) { return cos(pos*2*M_PI+theta)<=0?-1:1; }
-float triangleFunc(float pos,float theta) { return 1-fabs(pos+theta-0.5)*4; }
+float triangleFunc(float pos,float theta) { return 1-fabs(fmod(pos+theta,1.0)-0.5)*4; }
 
 int main() {
     uint16_t buffer[B_SIZE];
@@ -71,7 +71,7 @@ int main() {
         else if(ch=='y') { s.depth-=0.1; }
         else if(ch=='j') { s.depth*=2; }
         else if(ch=='k') { s.depth/=2; }
-        else if(ch=='h') { A=50; }
+        else if(ch=='h') { A=s.amplitude; }
         else if(ch=='o') { if(save_synth(".synthrc",&s)<0) { perror("save_synth"); break; } }
 
 
@@ -162,7 +162,7 @@ int open_synth(char *filename,struct synth_state* state) {
         fscanf(f, "osc2_type=%d\n",&state->osc2_type);
         fscanf(f, "osc3_type=%d\n",&state->osc3_type);
         fscanf(f, "third_mod=%d\n",&state->third_mod);
-        fscanf(f, "depth=%d\n",&state->depth);
+        fscanf(f, "depth=%f\n",&state->depth);
         fclose(f);
         return 1;
     }
@@ -181,7 +181,7 @@ int save_synth(char *filename,struct synth_state* state) {
         fprintf(f, "osc2_type=%d\n",state->osc2_type);
         fprintf(f, "osc3_type=%d\n",state->osc3_type);
         fprintf(f, "third_mod=%d\n",state->third_mod);
-        fprintf(f, "depth=%d\n",state->depth);
+        fprintf(f, "depth=%f\n",state->depth);
         fclose(f);
         return 1;
     }
