@@ -1,4 +1,4 @@
 all: freqmod.c
-	gcc -o freqmod freqmod.c -l ncurses
+	gcc -o freqmod freqmod.c -lncurses -lm
 clean: freqmod
 	rm freqmod
